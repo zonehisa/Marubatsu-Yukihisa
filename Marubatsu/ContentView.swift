@@ -22,64 +22,93 @@ struct ContentView: View {
         Quiz(question: "Textは文字列を表示する際に利用する", answer: true),
     ]
     
+    @AppStorage("quiz") var quizzeData = Data()
+    @State var quizzesArray: [Quiz] = []
+    
     @State var currentQuestionNum: Int = 0 // 今、何問目の数字
     @State var showingAlert = false
     @State var alertTitle = ""
     
+    init() {
+        if let decodedQuizzes = try? JSONDecoder().decode([Quiz].self, from: quizzeData) {
+            _quizzesArray = State(initialValue: decodedQuizzes)
+        }
+    }
+    
     var body: some View {
         GeometryReader { geometry in
-            VStack {
-                Text(showQuestion())
-                    .padding()   // 余白の追加
-                    .frame(width: geometry.size.width * 0.8, alignment: .leading) // 横幅を250、左寄せに
-                    .font(.system(size: 25)) // フォントサイズを25に
-                    .fontDesign(.rounded)    // フォントを丸みのあるものに
-                    .background(.yellow)     // 背景を黄色に
-                
-                Spacer()
-                
-                HStack {
-                    Button {
-                        checkAnswer(yourAnswer: true)
-                    } label: {
-                        Text("○")
+            NavigationStack {
+                VStack {
+                    Text(showQuestion())
+                        .padding()   // 余白の追加
+                        .frame(width: geometry.size.width * 0.8, alignment: .leading) // 横幅を250、左寄せに
+                        .font(.system(size: 25)) // フォントサイズを25に
+                        .fontDesign(.rounded)    // フォントを丸みのあるものに
+                        .background(.yellow)     // 背景を黄色に
+                    
+                    Spacer()
+                    
+                    HStack {
+                        Button {
+                            checkAnswer(yourAnswer: true)
+                        } label: {
+                            Text("○")
+                        }
+                        .frame(width: geometry.size.width * 0.4, height: geometry.size.width * 0.4)
+                        .font(.system(size: 100, weight: .bold))
+                        .foregroundStyle(.white)
+                        .background(.red)
+                        Button {
+                            checkAnswer(yourAnswer: false)
+                        } label: {
+                            Text("Ｘ")
+                        }
+                        .frame(width: geometry.size.width * 0.4, height: geometry.size.width * 0.4)
+                        .font(.system(size: 100, weight: .bold))
+                        .foregroundStyle(.white)
+                        .background(.blue)
                     }
-                    .frame(width: geometry.size.width * 0.4, height: geometry.size.width * 0.4)
-                    .font(.system(size: 100, weight: .bold))
-                    .foregroundStyle(.white)
-                    .background(.red)
-                    Button {
-                        checkAnswer(yourAnswer: false)
-                    } label: {
-                        Text("Ｘ")
-                    }
-                    .frame(width: geometry.size.width * 0.4, height: geometry.size.width * 0.4)
-                    .font(.system(size: 100, weight: .bold))
-                    .foregroundStyle(.white)
-                    .background(.blue)
                 }
-            }
-            .padding()
-            .frame(width: geometry.size.width, height: geometry.size.height)
-            .alert(alertTitle, isPresented: $showingAlert) {
-                Button("OK", role: .cancel) {
-                    //
+                .padding()
+                .navigationTitle("マルバツクイズ")
+                .alert(alertTitle, isPresented: $showingAlert) {
+                    Button("OK", role: .cancel) {
+                        //
+                    }
+                }
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink {
+                            CreateView(quizzesArray: $quizzesArray)
+                                .navigationTitle("問題を作ろう")
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.title)
+                        }
+                    }
                 }
             }
         }
     }
 
     func showQuestion() -> String {
-        let question = quizExamples[currentQuestionNum].question
+        var question = "問題がありません！"
+        
+        if !quizzesArray.isEmpty {
+            let quiz = quizzesArray[currentQuestionNum]
+            question = quiz.question
+        }
+        
         return question
     }
 
     func checkAnswer(yourAnswer: Bool) {
-        let quiz = quizExamples[currentQuestionNum]
+        if quizzesArray.isEmpty { return }
+        let quiz = quizzesArray[currentQuestionNum]
         let ans = quiz.answer
         if yourAnswer == ans {
             alertTitle = "正解"
-            if currentQuestionNum + 1 < quizExamples.count {
+            if currentQuestionNum + 1 < quizzesArray.count {
                 currentQuestionNum += 1
             } else {
                 currentQuestionNum = 0
