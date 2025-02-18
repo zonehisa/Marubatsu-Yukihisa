@@ -79,7 +79,7 @@ struct ContentView: View { // Viewプロトコルを遵守するContentView構�
                 .toolbar { // ツールバーを設定
                     ToolbarItem(placement: .topBarTrailing) { // ツールバーの右側に配置
                         NavigationLink { // ナビゲーションリンクを設定
-                            CreateView(quizzesArray: $quizzesArray) // CreateViewを表示
+                            CreateView(quizzesArray: $quizzesArray, currentQuestionNum: $currentQuestionNum) // CreateViewを表示
                                 .navigationTitle("問題を作ろう") // ナビゲーションタイトルを設定
                                 .onDisappear { // ビューが非表示になったときのアクション
                                     currentQuestionNum = 0 // 現在の問題番号を0に設定

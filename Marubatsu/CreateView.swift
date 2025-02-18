@@ -9,12 +9,14 @@ import SwiftUI
 
 struct CreateView: View { // Viewプロトコルを遵守するCreateView構造体
     @Binding var quizzesArray: [Quiz] // ContentView(親)からクイズデータを受け取る
+    @Binding var currentQuestionNum: Int // ContentView(親)から問題番号を受け取る
     @State var questionText = "" // 問題文を管理
     @State var selectedAnswer = "○" // 選択された解答を管理
     let answers = ["○", "×"] // 解答の選択肢
     @State private var showingAlert = false // アラート表示状態を管理
-    @FocusState private var isQuestionFieldFocused: Bool // フォーカスをバインド
     @State private var alertMessage = "" // アラートメッセージを管理
+    @State private var showingDeleteAlert = false // 削除アラート表示状態を管理
+    @FocusState private var isQuestionFieldFocused: Bool // フォーカスをバインド
     
     var body: some View { // ビューを返す
         VStack { // 垂直スタックを使用して要素を配置
@@ -62,12 +64,12 @@ struct CreateView: View { // Viewプロトコルを遵守するCreateView構造�
             .padding() // 余白を追加
             
             Button { // ボタンが押されたらダイアログを表示
-                showingAlert = true // ダイアログを表示
+                showingDeleteAlert = true // ダイアログを表示
             } label: {
                 Text("全削除") // テキストを表示
                     .foregroundStyle(.red) // テキストの色を赤色に
             }
-            .alert("確認", isPresented: $showingAlert) {
+            .alert("確認", isPresented: $showingDeleteAlert) {
                 Button("削除", role: .destructive) { // 削除ボタンが押されたらquizzesArrayを空にする
                     quizzesArray.removeAll() // クイズデータを空にする
                     UserDefaults.standard.removeObject(forKey: "quiz") // クイズデータを削除
@@ -92,6 +94,7 @@ struct CreateView: View { // Viewプロトコルを遵守するCreateView構造�
                     
                     if saveQuizzes(tempQuizzes) { // エンコードが成功したら更新
                         quizzesArray = tempQuizzes
+                        currentQuestionNum = 0 // 問題番号を更新
                     }
                 }
                 .onDelete { indexSet in // 削除ボタンが押されたらクイズデータを削除
@@ -100,6 +103,7 @@ struct CreateView: View { // Viewプロトコルを遵守するCreateView構造�
                     
                     if saveQuizzes(tempQuizzes) { // エンコードが成功したら更新
                         quizzesArray = tempQuizzes
+                        currentQuestionNum = 0 // 問題番号を更新
                     }
                 }
             }
@@ -152,5 +156,5 @@ struct CreateView: View { // Viewプロトコルを遵守するCreateView構造�
 }
 
 #Preview {
-    CreateView(quizzesArray: .constant([])) // プレビューを表示
+    CreateView(quizzesArray: .constant([]), currentQuestionNum: .constant(0)) // プレビューを表示
 }
